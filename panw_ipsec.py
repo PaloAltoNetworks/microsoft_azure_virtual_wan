@@ -188,8 +188,8 @@ class PaloAltoVPN:
         """
         Create an IKE Gateway element on the Palo Alto Firewall
         """
-
-        self.ike_gw = network.IkeGateway(name=name, version='ikev2', enable_ipv6=False,
+        
+        ike_gw = network.IkeGateway(name=name, version='ikev2', enable_ipv6=False,
                                 disabled=False, peer_ip_type='ip', peer_ip_value=peer_ip_value, 
                                 interface='ethernet1/1', 
                                 #local_ip_address_type='ip', local_ip_address='127.0.0.1', 
@@ -210,9 +210,9 @@ class PaloAltoVPN:
                                 ikev2_crypto_profile=ikev2_crypto_profile, ikev2_cookie_validation=ikev2_cookie_validation,
                                 ikev2_send_peer_id=ikev2_send_peer_id, enable_liveness_check=enable_liveness_check, 
                                 liveness_check_interval=liveness_check_interval)
-        print("IKE GW Configuration: %s", self.ike_gw.element_str())
-        self.fw_dev_hndl.add(self.ike_gw)
-        self.ike_gw.create()
+        print("IKE GW Configuration: %s", ike_gw.element_str())
+        self.fw_dev_hndl.add(ike_gw)
+        ike_gw.create()
 
     def create_ipsec_tunnel(self, name, tunnel_interface, key_type, ike_gw_name, 
                         ipsec_crypto_profile, ipv6=False, enable_tunnel_montior_mode=False,
@@ -248,9 +248,12 @@ def extract_azure_vpn_config(data, registered_sitename):
         if site_name == registered_sitename:
             peer_ip = site_config['vpnSiteConfiguration']['IPAddress']
             vpnSiteConnection = site_config['vpnSiteConnections'][0]
-            peer_subnet = vpnSiteConnection['hubConfiguration']['ConnectedSubnets'][0]
+            peer_subnet = None
+            if 'ConnectedSubnets' in vpnSiteConnection['hubConfiguration']:
+                peer_subnet = vpnSiteConnection['hubConfiguration']['ConnectedSubnets'][0]
             vwan_ip = vpnSiteConnection['gatewayConfiguration']['IpAddresses']
             psk = vpnSiteConnection['connectionConfiguration']['PSK']
+            print psk
             az_vwan = AzureManagedVPN(vwan_ip['Instance0'], peer_ip, site_name, 
                                     peer_subnet, psk)
             print str(az_vwan)
@@ -297,8 +300,6 @@ def main():
     az_data = parse_config_files(sys.argv[2])
     az_vpn_hndl = extract_azure_vpn_config(az_data, sys.argv[3])
     
-    print("Shared key is: {}".format(az_vpn_hndl.pre_shared_key))
-    
     pan_vpn_hndl.fw_dev_hndl.refresh_system_info()
     pan_vpn_hndl.create_ike_crypto_profile(pan_vpn_hndl.ike_profile.name,
                                            pan_vpn_hndl.ike_profile.dh_group, 
@@ -327,5 +328,10 @@ def main():
                                     pan_vpn_hndl.ipsec_tunnel.ike_gw, 
                                     pan_vpn_hndl.ipsec_tunnel.ipsec_profile)
 
+    pan_vpn_hndl.fw_dev_hndl.commit(sync=True)
+
+    print("\n\n***********************************")
+    print("\nConfiguration successfully applied.")
+    print("\n\n***********************************")
 if __name__ == "__main__":
     main()

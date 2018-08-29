@@ -1,0 +1,34 @@
+{
+    "creds": {
+        "fw_ip": "",
+        "username": "",
+        "password": ""
+    },
+    "ike_profile": {
+        "name": "",
+        "dh_group": "group2",
+        "authentication": ["sha1"],
+        "encryption": ["aes-256-cbc", "3des"],
+        "lifetime_secs": ""
+    },
+    "ipsec_profile": {
+        "name": "",
+        "encryption": ["aes-128-cbc", "3des"],
+        "authentication": ["sha1"],
+        "dh_group": "no-pfs",
+        "lifetime_hrs": "1"
+    },
+    "ike_gw": {
+        "name": "ike_gw2",
+        "protocol_version": "ikev2",
+        "interface": "ethernet1/1",
+        "auth_type": "pre-shared-key",
+        "enable_passive_mode": true,
+        "liveness_check": "5"
+    },
+    "ipsec_tunnel": {
+        "name": "ipsec_tunnel2",
+        "tunnel_interface": "tunnel.2",
+        "key_type": "auto-key"
+    }
+}
