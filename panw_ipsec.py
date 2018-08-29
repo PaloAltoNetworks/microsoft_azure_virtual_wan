@@ -1,5 +1,7 @@
 # This file implements the interactions with Palo Alto Networks firewalls 
 # for the purpose of creation of IPSec and VPN tunnels.
+# Author(s): Vinay Venkataraghavan
+# Date: 8/28/2018 
 
 #!/usr/bin/env python 
 
@@ -35,18 +37,120 @@ class AzureManagedVPN:
         self.peer_site_address_space = peer_site_address_space
         self.pre_shared_key = pre_shared_key 
         
+    def __str__(self):
+        return "Virtual WAN IP: {}\n"\
+                "Peer Site IP: {}\n"\
+                "Peer Site Name: {}"\
+                "Peer Site Address Space: {}"\
+                "Pre Shared Key: {}".format(self.vwan_ip, self.peer_site_ip,
+                                            self.peer_site_name, self.peer_site_address_space, 
+                                            self.pre_shared_key)
+
+class IKEProfile:
+
+    def __init__(self, *args, **kwargs):
+        
+        self.name = kwargs.get('name')
+        self.authentication = kwargs.get('authentication')
+        self.encryption = kwargs.get('encryption')
+        self.dh_group = kwargs.get('dh_group')
+        self.lifetime_secs = kwargs.get('lifetime_secs')
+
+    def __str__(self):
+
+        return "IKE Profile: \n"\
+               "Name: {}\n"\
+               "Authentication: {}\n"\
+               "Encryption: {}\n"\
+               "DH Group: {}\n".format(self.name, self.authentication, 
+                                    self.encryption, self.dh_group)
+
+class IPSecProfile:
+    def __init__(self, *args, **kwargs):
+
+        self.name = kwargs.get('name') 
+        self.authentication = kwargs.get('authentication')
+        self.encryption = kwargs.get('encryption') 
+        self.dh_group = kwargs.get('dh_group') 
+        self.lifetime_hrs = kwargs.get('lifetime_hrs')
+
+    def __str__(self):
+        return "IPSec Profile: \n"\
+               "Name: {}\n"\
+               "Authentication: {}\n"\
+               "Encryption: {}\n"\
+               "DH Group: {}\n"\
+               "Lifetime hours: {}\n".format(self.name, self.authentication, 
+                                    self.encryption, self.dh_group, self.lifetime_hrs)
+
+
+class IKEGateway:
+    def __init__(self, *args, **kwargs):
+
+        self.name = kwargs.get('name')
+        self.protocol_version = kwargs.get('protocol_version') 
+        self.interface = kwargs.get('interface') 
+        self.auth_type = kwargs.get('auth_type') 
+        self.enable_passive_mode = kwargs.get('enable_passive_mode')
+        self.liveness_check = kwargs.get('liveness_check')
+
+    def __str__(self):
+        return "IKE Gateway\n"\
+               "Name: {}\n"\
+               "Protocol Version: {}\n"\
+               "Interface: {}\n"\
+               "Auth Type: {}\n"\
+               "Enable Passive Mode: {}\n"\
+               "Liveness check: {}\n".format(self.name, self.protocol_version, 
+                                        self.interface, self.auth_type, 
+                                        self.enable_passive_mode, self.liveness_check) 
+ 
+class IPSecTunnel:
+
+    def __init__(self, *args, **kwargs):
+
+        self.name = kwargs.get('name')
+        self.key_type = kwargs.get('key_type')
+        self.tunnel_interface = kwargs.get('tunnel_interface')
+        self.ike_gw = args[0]
+        self.ipsec_profile = args[1]
+
+    def __str__(self):
+        return "IPSec Tunnel: \n"\
+               "Name: {}\n"\
+               "Tunnel Interface: {}\n"\
+               "Key type: {}\n"\
+               "IKE Gateway: {}\n"\
+               "IPSec Crypto Profile: {}".format(self.name, 
+                                                 self.tunnel_interface, 
+                                                 self.key_type, 
+                                                 self.ike_gw,
+                                                 self.ipsec_profile)
 
 class PaloAltoVPN:
 
-    def __init__(self, username, password, ip):
+    def __init__(self, username, password, ip, ike_profile, ipsec_profile, ike_gw, ipsec_tunnel):
+
         self.username = username
         self.password = password
         self.ip = ip 
         self.fw_dev_hndl = firewall.Firewall(self.ip, self.username, self.password)
-        self.ike_crypto_prof1 = None
-        self.ipsec_crypto_prof1 = None
-        self.ike_gw = None
-        self.ipsec_tunnel = None
+        
+        self.ipsec_tunnel = ipsec_tunnel
+        self.ike_profile = ike_profile
+        self.ipsec_profile = ipsec_profile
+        self.ike_gw = ike_gw
+
+    def __str__(self):
+
+        return "FW IP: {}\n"\
+                "{} \n"\
+               "{} \n"\
+               "{} \n"\
+               "{}\n".format(self.ip, str(self.ike_profile), 
+                             str(self.ipsec_profile), 
+                             str(self.ike_gw),
+                             str(self.ipsec_tunnel))
 
     def create_ike_crypto_profile(self, name="", dh_group=[], authentication=[], 
                                    encryption=[], lifetime_secs=28800, auth_multiple=0):
@@ -131,7 +235,7 @@ def parse_config_files(filename):
     data = {}
     with open(filename) as f:
         data = json.load(f)
-    pprint(data)
+    
     return data 
 
 def extract_azure_vpn_config(data, registered_sitename):
@@ -139,21 +243,46 @@ def extract_azure_vpn_config(data, registered_sitename):
     Extract relevant data from the Azure Configurations
     """
     for site_config in data:
-        print("%s", site_config)
+        
         site_name = site_config['vpnSiteConfiguration']['Name']
         if site_name == registered_sitename:
             peer_ip = site_config['vpnSiteConfiguration']['IPAddress']
             vpnSiteConnection = site_config['vpnSiteConnections'][0]
             peer_subnet = vpnSiteConnection['hubConfiguration']['ConnectedSubnets'][0]
-            print('Peer subnet address space: {}'.format(peer_subnet))
-            print("Peer ip: {}".format(peer_ip))
             vwan_ip = vpnSiteConnection['gatewayConfiguration']['IpAddresses']
             psk = vpnSiteConnection['connectionConfiguration']['PSK']
-            print("vwan ip: {} PSK: {}".format(vwan_ip, psk))
             az_vwan = AzureManagedVPN(vwan_ip['Instance0'], peer_ip, site_name, 
                                     peer_subnet, psk)
-            pprint(az_vwan)
+            print str(az_vwan)
             return az_vwan
+
+def parse_fw_configs(filename):
+    """
+    Parse the firewall config file and extract data.
+    """
+    fw_data = parse_config_files(filename)
+
+    ike_prof_data = fw_data.get('ike_profile') 
+    _ike_prof = IKEProfile(**ike_prof_data)
+
+    
+    ipsec_prof_data = fw_data.get('ipsec_profile')
+    _ipsec_prof = IPSecProfile(**ipsec_prof_data)
+    
+    ike_gw_data = fw_data.get('ike_gw')
+    _ike_gw = IKEGateway(**ike_gw_data)
+
+    ipsec_tunnel_data = fw_data.get('ipsec_tunnel')
+    _ipsec_tunnel = IPSecTunnel(_ike_gw.name, _ipsec_prof.name, **ipsec_tunnel_data)
+    fw_creds = fw_data.get('creds')
+
+    print("\nCreate a connection with the firewall at: {}\n".format(fw_creds.get('fw_ip')))
+    fw_ip = fw_creds.get('fw_ip')
+    username = fw_creds.get('username')
+    password = fw_creds.get('password')
+
+    pan_vpn_hndl = PaloAltoVPN(username, password, fw_ip, _ike_prof, _ipsec_prof, _ike_gw, _ipsec_tunnel)
+    return pan_vpn_hndl
 
 def main():
 
@@ -161,36 +290,42 @@ def main():
         print("Usage: %s <palo alto config filename> <azure vpn configuration filename> <registered branch name in azure>",
                 sys.argv[0])
         sys.exit(1)
-    
-
-    data = {}
-    az_data = {}
      
-    fw_data = parse_config_files(sys.argv[1])
+    pan_vpn_hndl = parse_fw_configs(sys.argv[1])
+    print str(pan_vpn_hndl)
+    
     az_data = parse_config_files(sys.argv[2])
     az_vpn_hndl = extract_azure_vpn_config(az_data, sys.argv[3])
     
-    print("Establish a connection with the firewall at: {}".format(data.get('fw_ip')))
-    fw_ip = fw_data.get('fw_ip')
-    username = fw_data.get('username')
-    password = fw_data.get('password')
-
     print("Shared key is: {}".format(az_vpn_hndl.pre_shared_key))
     
-    pan_vpn_hndl = PaloAltoVPN(username, password, fw_ip)
-    
     pan_vpn_hndl.fw_dev_hndl.refresh_system_info()
-    pan_vpn_hndl.create_ike_crypto_profile("cortex_ike_crypto1",
-                              ["group2"], ["sha1"], ["aes-256-cbc", "3des"])
-    pan_vpn_hndl.create_ipsec_crypto_profile('cortex_ipsec_crypto1', ['aes-128-cbc', '3des'], ['sha1'], None, 'no-pfs', 1)
+    pan_vpn_hndl.create_ike_crypto_profile(pan_vpn_hndl.ike_profile.name,
+                                           pan_vpn_hndl.ike_profile.dh_group, 
+                                           pan_vpn_hndl.ike_profile.authentication, 
+                                           pan_vpn_hndl.ike_profile.encryption)
 
-    pan_vpn_hndl.create_ike_gateway("ike_gw2", 'ikev2', False, False, 'ip',
-                       az_vpn_hndl.vwan_ip, 'ethernet1/1', 'ip', None, 
-                       'pre-shared-key', az_vpn_hndl.pre_shared_key, True, False, 
-                        'cortex_ike_crypto1', False, False, True, 5)
+    pan_vpn_hndl.create_ipsec_crypto_profile(pan_vpn_hndl.ipsec_profile.name, 
+                                            pan_vpn_hndl.ipsec_profile.encryption, 
+                                            pan_vpn_hndl.ipsec_profile.authentication, 
+                                            None, pan_vpn_hndl.ipsec_profile.dh_group, 
+                                            pan_vpn_hndl.ipsec_profile.lifetime_hrs)
 
-    pan_vpn_hndl.create_ipsec_tunnel('ipsec_tunnel2', 'tunnel.2', 'auto-key', 'ike_gw2', 
-                        'cortex_ipsec_crypto1')
+    pan_vpn_hndl.create_ike_gateway(pan_vpn_hndl.ike_gw.name, pan_vpn_hndl.ike_gw.protocol_version, 
+                                    False, False, 'ip',
+                                    az_vpn_hndl.vwan_ip, pan_vpn_hndl.ike_gw.interface, 
+                                    'ip', None, 
+                                    pan_vpn_hndl.ike_gw.auth_type, 
+                                    az_vpn_hndl.pre_shared_key, 
+                                    True, False, 
+                                    pan_vpn_hndl.ike_profile.name, 
+                                    False, False, True, 5)
+
+    pan_vpn_hndl.create_ipsec_tunnel(pan_vpn_hndl.ipsec_tunnel.name, 
+                                    pan_vpn_hndl.ipsec_tunnel.tunnel_interface, 
+                                    pan_vpn_hndl.ipsec_tunnel.key_type, 
+                                    pan_vpn_hndl.ipsec_tunnel.ike_gw, 
+                                    pan_vpn_hndl.ipsec_tunnel.ipsec_profile)
 
 if __name__ == "__main__":
     main()
