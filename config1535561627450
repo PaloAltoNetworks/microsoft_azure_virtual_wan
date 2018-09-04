@@ -1,3 +1,0 @@
-[
-  {"configurationVersion":{"LastUpdatedTime":"2018-08-29T16:54:02.3415379Z","Version":"dd9c2ec8-fb96-4614-b907-6e260b5e79df"},"vpnSiteConfiguration":{"Name":"AutomationVpnSite1","IPAddress":""},"vpnSiteConnections":[{"hubConfiguration":{"AddressSpace":"10.7.0.0/16","Region":"West US"},"gatewayConfiguration":{"IpAddresses":{"Instance0":"","Instance1":""}},"connectionConfiguration":{"IsBgpEnabled":false,"PSK":"msU","IPsecParameters":{"SADataSizeInKilobytes":102400000,"SALifeTimeInSeconds":3600}}}]}
-]
