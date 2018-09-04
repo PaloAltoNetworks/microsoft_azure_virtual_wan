@@ -1,0 +1,21 @@
+{ 
+    "name": "TestHub3", 
+    "type": "Microsoft.Network/virtualhubs", 
+    "location": "westus",
+    "properties": {
+        "addressPrefix": "10.8.0.0/16",
+        "virtualWan": {
+            "id": "/subscriptions/<subscription id>/resourceGroups/<resource group name>/providers/Microsoft.Network/virtualWans/<name of the virtual wan created in VirtualWan.json>"
+        },
+        "virtualNetworkConnections": [
+	        { 
+              "name": "<name of virtual connection>",
+               "properties": {
+	                "remoteVirtualNetwork": {
+                        "id": "/subscriptions/<subscription id>/resourceGroups/<resource group name>/providers/Microsofot.Network/virtualNetworks/<vnet name>"  
+                    }
+	           }
+            }
+        ]
+    }
+}

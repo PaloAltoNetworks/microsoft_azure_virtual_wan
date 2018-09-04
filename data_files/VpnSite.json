@@ -1,0 +1,17 @@
+{ 
+    "name": "", 
+    "type": "Microsoft.Network/vpnSites",
+    "location": "westus", 
+    "properties": { 
+        "addressSpace": { 
+            "addressPrefixes": [ "10.0.1.0/24" ] 
+            }, 
+            "deviceProperties": { 
+                "deviceModel": "VM-Series", "deviceVendor": "Palo Alto Networks", "linkSpeedInMbps": 100 
+            }, 
+            "ipAddress": "", 
+            "virtualWan": { 
+                "id": "/subscriptions/<subscription id>/resourceGroups/<resource group name>/providers/Microsoft.Network/virtualWans/<name of virtual wan specified in VirtualWan.json>" 
+            } 
+    } 
+}

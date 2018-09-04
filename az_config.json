@@ -1,0 +1,21 @@
+{
+    "subscription": "",
+    "apiversion": "2017-09-01",
+    "endpoint": "https://brazilus.management.azure.com",
+    "azure_resources": {
+        "config_filemap": {
+            "virtual_wan_data": "VirtualWan.json",
+            "virtual_hub_data": "VirtualHub.json",
+            "vpn_site_data": "VpnSite.json",
+            "vpn_gateway_data": "VpnGateway.json"
+        },
+        "resource_names": {
+            "VirtualWanName": "",
+            "VirtualHubName": "",
+            "VpnSiteName": "",
+            "VpnGatewayName": ""
+        }
+    },
+    "azure_driver_filename": "./pan_cortex.py",
+    "resource_group": "",
+}

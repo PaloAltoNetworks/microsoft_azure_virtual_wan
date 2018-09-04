@@ -1,0 +1,6 @@
+{ 
+    "name": "TestVirtualWan3", 
+    "type": "Microsoft.Network/virtualWans", 
+    "location": "westus", 
+    "properties": { "disableVpnEncryption": false } 
+}

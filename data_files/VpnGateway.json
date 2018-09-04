@@ -1,0 +1,31 @@
+{
+  "name": "",
+  "location": "West US",
+  "tags": {
+    "key1": "value1"
+  },
+  "properties": {
+    "virtualHub": {
+      "id": "/subscriptions/<subscription id>/resourceGroups/<resource group name>/providers/Microsoft.Network/virtualHubs/<name of virtual hub specified in VirtualHub.json>"
+    },
+    "connections": [
+      {
+        "name": "",
+        "properties": {
+          "remoteVpnSite": {
+            "id": "/subscriptions/<subscription id>/resourceGroups/<resource group name>/providers/Microsoft.Network/vpnSites/<name of VpnSite specified in VpnSite.json>"
+          },
+          "sharedKey": "key",
+          "connectionBandwidth": 150,
+          "ipsecPolicies": [],
+          "enableBgp": false, 
+          "enableRateLimiting": false
+        }
+      }
+    ],
+    "policies": {
+      "allowBranchToBranchTraffic": true,
+      "allowVnetToVnetTraffic": false
+    }
+  }
+}
