@@ -92,7 +92,7 @@ class Azure:
                "API Version: {}\n"\
                "Endpoint: {}\n"\
                "Resource Names: {}\n"\
-               "Command to File Map: {}\n".format(self.subscription, 
+               "Command to File Map: {}\n".format("***************", 
                                        self.apiversion, 
                                        self.endpoint,
                                        self.resource_names,
@@ -158,20 +158,28 @@ def parse_azure_config_file(filename):
     return az_hndl
 
 def main():
+
+    print "****************************************"
     print "Palo Alto Networks VPN Automation System"
+    print "****************************************"
+
+    if len(sys.argv) != 2:
+        print "Usage: python pan_vpn_automation.py <azure virtual wan JSON filename>"
+        sys.exit(0)
 
     az_hndl = parse_azure_config_file(sys.argv[1])
     cmdp = CommandProcessor()
     
     for _cmd in az_hndl.command_order: 
-        print _cmd
+        
         cur_cmd = None
         resource_name = az_hndl.get_resource_name_for_command(_cmd)
-        print resource_name
         cur_cmd = cmdp.construct_command(_cmd, az_hndl, resource_name, az_hndl.commands_list.get(_cmd))
         
         time.sleep(5)
-        print "Executing command: ", cur_cmd
+        print "*****************************"
+        print "Executing Operation: {} Resource Name: {}".format(_cmd, resource_name)
+        print "*****************************"
 
         output = cmdp.run_check_output(cur_cmd)
         if output:
@@ -179,6 +187,14 @@ def main():
             print _new_op
             _new_cmd = cmdp.construct_command(_new_op, az_hndl, resource_name, az_hndl.commands_list.get(_cmd))
             cmdp.retry_run_check_output(_new_cmd)
+
+        print "*****************************"
+        print "Executing command: {} complete".format(cur_cmd)
+        print "*****************************"
+        
+    print "****************************************"
+    print "Completed the provisioning of the Azure Virtual WAN."
+    print "****************************************"
 
 if __name__ == "__main__":
     main()
