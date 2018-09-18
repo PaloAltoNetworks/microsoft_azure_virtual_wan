@@ -1,7 +1,7 @@
 # microsoft_azure-cortex
 This project repository contains the tools to automate the creation of VPN connections between Palo Alto Networks firewall devices and the Microsoft Azure Virtual WAN Service. 
 
-![Palo Alto Network Virtual WAN Automation Architecture] (azure-virtual-wan.png)
+![Alt text](https://github.com/PaloAltoNetworks/microsoft_azure_virtual_wan/blob/master/azure-virtual-wan.png  "Palo Alto Network Virtual WAN Automation Architecture")
 
 1. Palo Alto Networks VPN Automation Tool Overview:
 
