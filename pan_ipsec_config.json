@@ -5,30 +5,63 @@
         "password": ""
     },
     "ike_profile": {
-        "name": "",
+        "name": "ikeprof9",
         "dh_group": "group2",
-        "authentication": ["sha1"],
+        "authentication": ["sha256"],
         "encryption": ["aes-256-cbc", "3des"],
         "lifetime_secs": ""
     },
     "ipsec_profile": {
-        "name": "",
+        "name": "ipsecprof9",
         "encryption": ["aes-128-cbc", "3des"],
-        "authentication": ["sha1"],
+        "authentication": ["sha256"],
         "dh_group": "no-pfs",
-        "lifetime_hrs": "1"
+        "lifetime_secs": 28800
     },
-    "ike_gw": {
-        "name": "ike_gw2",
-        "protocol_version": "ikev2",
-        "interface": "ethernet1/1",
-        "auth_type": "pre-shared-key",
-        "enable_passive_mode": true,
-        "liveness_check": "5"
-    },
-    "ipsec_tunnel": {
-        "name": "ipsec_tunnel2",
-        "tunnel_interface": "tunnel.2",
-        "key_type": "auto-key"
-    }
+    "ike_gw": [
+        {
+            "name": "ike_gw2",
+            "protocol_version": "ikev2",
+            "interface": "ethernet1/1",
+            "auth_type": "pre-shared-key",
+            "enable_passive_mode": true,
+            "liveness_check": "5"
+        },
+        {
+            "name": "ike_gw3",
+            "protocol_version": "ikev2",
+            "interface": "ethernet1/1",
+            "auth_type": "pre-shared-key",
+            "enable_passive_mode": true,
+            "liveness_check": "5"
+        }
+    ],
+    "ipsec_tunnel": [
+        {
+            "name": "ipsec_tunnel9",
+            "tunnel_interface": "tunnel.2",
+            "ike_gw": "ike_gw2",
+            "key_type": "auto-key"
+        },
+        {
+            "name": "ipsec_tunnel10",
+            "tunnel_interface": "tunnel.3",
+            "ike_gw": "ike_gw3",
+            "key_type": "auto-key"
+        }
+    ],
+    "tunnel_interface": [
+        {
+            "name": "tunnel.2",
+            "virtual_router": "default",
+            "security_zone": "L3-trust",
+            "comment": "tunnel interface for HQ to cloud VPN"
+        }, 
+        {
+            "name": "tunnel.3",
+            "virtual_router": "default",
+            "security_zone": "L3-trust",
+            "comment": "tunnel interface for HQ to cloud VPN"
+        }
+    ]
 }
